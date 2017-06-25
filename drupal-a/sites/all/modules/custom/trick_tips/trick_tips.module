@@ -1,0 +1,131 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: TEMIT
+ * Date: 13/05/2017
+ * Time: 13:27
+ */
+
+/**
+ * Implementing the hook_menu
+ */
+function trick_tips_menu() {
+$items['tips'] = array(
+  'title' => t('Utility Functions'),
+  'description' => t('Common examples of utility functions.'),
+  'page callback' => 'tips_page',
+  'access arguments' => array('access content'),
+  //'access' => false,
+);
+$items['editor'] = array(
+  'title' => t('Editor'),
+  'description' => t('Links and details about solid Drupal editors.'),
+  'page callback' => 'tips_editor_page',
+  'access arguments' => array('access_content'),
+);
+$items['duplicate'] = array(
+  'title' => t('How to check if Module idea exit'),
+  'description' => t('A few tools to use to check upon not creating a duplicate.'),
+  'page callback' => 'tips_duplicate_page',
+  'access arguments' => array('access_content'),
+);
+
+  return $items;
+
+}
+
+
+/**
+ * @return string
+ *
+ */
+function tips_page() {
+  $output ='';
+global $user;
+  //Example of using the url() function
+  $output.= '<h2>' .t('Example of URL()') .'</h2>';
+  $Url_example['Simple path'] = url('mysample/list');
+  $Url_example['External path'] = url('http://example.com');
+  $Url_example['Absolute local path'] = url('admin/config' , array('absolute' => true));
+  $Url_example['Fragment '] = url('test/forms', array('fragment' => 'footer', ));
+  $Url_example['External in Option '] = url('admin/config', array('external' => true));
+  $Url_example['Query String'] = url('admin/config', array('query' => array('destination' => 'admin')));
+  $Url_example['Base path'] = url('admin/module', array('base_url' => true));
+
+  foreach($Url_example as $key => $value) {
+$output .= '<p><strong>' . $key .'</strong><br>' . $value . '</p>' ;
+  }
+
+
+  //Example of using the l() function
+
+  $output.= '<h2>' .t('Example of L()') .'</h2>';
+  $l_example['Simple path'] = l('Simple path', 'test/forms', array('external' => true));
+  $l_example['External path'] = l('External Path','http://example.com');
+  $l_example['Absolute local path'] = l('Absolute local path', 'test/forms' , array('absolute' => true));
+  $l_example['Fragment'] = l('Fragment', 'mysample/list', array('fragment' => 'footer'));
+  $l_example['Query String'] = l('Query string','tips', array('query' => array(
+    'destination' => 'admin',
+	'random_string' => '<h1>This is random!!',
+	)));
+  $l_example['Raw Hyperlink'] = t('Visit the <a href="@url">Setting</a> Page', array('@url' => 'admin/module'));
+
+$l_example['attribute'] = l('Attributes', 'admin/config', array('attributes' => array(
+  'class' => 'read-attribute',
+  'target' => '_blank',
+  'rel' =>'some values',
+)));
+
+  foreach($l_example as $key => $value) {
+	$output .= '<p><strong>' . $key .'</strong><br>' . $value . '</p>' ;
+  }
+
+//Example of using the t() function
+
+  $output.= '<h2>' .t('Example of t()') .'</h2>';
+  $t_example['Simple path'] = t('I am user 1');
+
+  //using ! means we want to insert this variable as it is we dont want to change anything about it.
+  // Use this for text that has already been sanitized.i.e We use this when we are passing value from our file or code n not from url
+  $t_example['String as it is placeholder (!)'] = t('I am user no !uid', array('!uid' => $user->uid));
+
+  //using @ means we sanitize raw or malicious text (either coming from url or bad user) to be display on the page .
+  //Use this as the default choice for anything displayed on a page on the site.
+  $t_example['String as a sanitizer placeholder (@)'] = t('This random String is: @rand. ', array(
+    '@rand' => $_GET['random_string']));
+
+  //Escaping any html and highlighted by(<em>emphasized</em> ) the text.
+  $t_example['String with escape and highlighted placeholder (%)'] = t('This random String text has change to: %rand. ', array(
+	'%rand' => $_GET['random_string']));
+
+  foreach ($t_example as $k => $v) {
+	$output .= '<p><strong>' . $k .'</strong><br>' . $v . '</p>' ;
+  }
+
+
+  //variable example
+
+  //Get the variable if it exist
+  $variable =  variable_get('trick_tips_variable', 0);
+
+  //increment the  $variable by 1
+  $variable++;
+
+  //setting the variable to the new variable in other words create a table to store the variable value
+  variable_set('trick_tips_variable', $variable);
+
+  if (isset($_GET['clear'])) {
+	variable_del('trick_tips_variable');
+
+	drupal_set_message('<em>' .  t('Hey You just clear the <b>trick_tips_variable</b> variable from !num to 0.', array(
+		'!num' => $variable)) . '</em>' );
+  }
+
+  $output .= '<h2>' . t('Example of variable_get(), variable_set(), variable_del().') . '</h2>' ;
+  $output.= '<p>The variable is currently set to ' .  variable_get('trick_tips_variable', 0) . '. ' .
+	l('increment the variable by 1', 'tips') . '. ' . l('Delete the variable', 'tips', array('query' => array('clear' => 1))) .
+	'</p>';
+
+
+  return $output;
+}

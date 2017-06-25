@@ -1,0 +1,6 @@
+; $ID$
+name = Alter Forms
+package = My Form Alter
+description = This is used to change any forms from the Drupal core form code
+core = 7.x
+files[] = form_change.module

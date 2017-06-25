@@ -1,0 +1,9 @@
+; $ID$
+name = Trails
+package = My Trails Module
+description = Track history of Visited pages
+core = 7.x
+configure = admin/config/trails
+files[] = trails.module
+files[] = trails.admin.inc
+dependencies[] = block

@@ -1,0 +1,257 @@
+<?php
+/**
+ *
+ *
+ */
+
+function mysample_permission(){
+  return array(
+    'administer mysample_module' => array(
+      'title' => t('Adminster My Module '),
+	  'description' => t('This allows access to My Module'),
+	)
+  );
+}
+
+/**
+ * Implementing a hook_menu
+ */
+
+function mysample_menu() {
+  $items['mysample/page'] = array(
+     'title' => 'My Home Page',
+	 'decription' => t('Little History about Me'),
+	 'page callback' => 'history_page',
+	 'access arguments' => array('access content'),
+	 '#attribute' => array(
+	   'class' => array('target'),
+	),
+  );
+
+  //this type you are passing the page arguments through the url by typing with
+  // a / after the real url for the page i.e 'mysample/page1/5/4
+  $items['mysample/page1'] = array(
+	'page callback' => 'calc_page',
+	'title' => 'Calculations',
+	'description' => t('Arithmetic calculation'),
+	'access arguments' => array('access content'),
+  );
+
+  //here we are getting the page argument to be used by the callback function by
+  // from the url..i.e 'mysample/page2/5'.here we are using just one argument which
+  //will still work fine but we can use maximum of two since the callback has 2 also.
+  $items['mysample/page2/5'] = array(
+	'title' => 'Arithmetic',
+	'description' => t('Arithmetic calculation'),
+	'page callback' => 'calc_page',
+	'page arguments' => array(2),
+	'access arguments' => array('access content'),
+  );
+
+  $items['mysample/page3'] = array(
+	'title' => 'Search Box',
+	'description' => t('Box for search'),
+	'page callback' => 'drupal_get_form',
+	'page arguments' => array('mysample_search_form',2,$term = '*'),
+	'access arguments' => array('administer mysample_module'),
+  );
+/*
+  $items['mysample/page3/%'] = array(
+	'page callback' => 'drupal_get_form',
+	'page arguments' => array('mysample_search_form',2,$term = '*'),
+	'access arguments' => array('administer mysample_module'),
+  );
+*/
+  $items['mysample/list'] = array(
+	'title' => 'Test List',
+	'page callback' => 'mysample_list',
+	'access arguments' => 'administer mysample_module',
+	'access callback' => TRUE,
+	'type' => MENU_CALLBACK,
+  );
+
+  $items['mysample/delete/%'] = array(
+	'title' => 'Delete Item',
+	'page callback' => 'drupal_get_form',
+	'page arguments' => array('mysample_delete_page_form', 2),
+	'access arguments' => 'administer mysample_module',
+	'type' => MENU_CALLBACK,
+	'access callback' => TRUE,
+  );
+
+  $items['mysample/page4'] = array(
+    //'$title' => t('other Form Elements'),
+	'page callback' => 'other_element_types',
+	'type' => MENU_CALLBACK,
+	'access arguments' => 'administer mysample_module',
+	'access callback' => TRUE,
+  );
+
+  return $items;
+}
+
+function mysample_list(){
+  $header = array('#', 'Items', 'Action');
+  $rows = array(
+	array(1 ,'Samsung', l('Delete', 'mysample/delete/1')),
+	array(2 ,'Nokia', l('Delete', 'mysample/delete/2')),
+	array(3 ,'Sony', l('Delete', 'mysample/delete/3')),
+  );
+  return theme('table', array('header' => $header, 'rows' => $rows));
+}
+
+function mysample_delete_page_form($form, &$form_state, $my_id){
+  $form = array();
+  $form['my_id'] = array(
+	'#type' => 'value',
+	'#value' => $my_id,
+  );
+  $caption = '<p>'. t('This action cannot be undone.') . '</p>';
+  $heading =   t('Are you sure you want to delete this item?');
+  $cancel_path = 'mysample/list';
+  $yes = t('Delete');
+  $no =	t('Cancel');
+
+return confirm_form($form, $heading, $cancel_path, $caption, $yes, $no);
+}
+
+function mysample_delete_page_form_submit($form, &$form_state){
+   $my_id = $form_state['values']['my_id'];
+   $my_id = rawurldecode($my_id);
+  if(!empty($my_id)){
+	drupal_set_message('You Have Confirmed the deletion of item ' . $form_state['values']['my_id'] . '.');
+	$form_state['redirect'] = 'mysample/list';
+  }
+    drupal_goto('mysample/list');
+}
+
+/**
+ * callback function for search form
+ * $form_state is passed to all form callbacks. $variable is the wildcard from the URL
+ * we can use $form too in place of $form_state
+ *
+ * $form_state['build_info']['args'][0] helps to get the value of the first argument remaining from the drupal_get_form()
+ * so in this case the only para left in the drupal_get_form() is the  $term ='*' which is pass thru the function callback
+ * and is in position '0' after the function drupal_get_form() is run in the core drupal file
+ *
+ * $term =  $form_state['values']['box'] help to supply value for a particular form element and in this case is 'box',that is
+ * then use to provide value for the default_value
+ */
+
+function mysample_search_form($form, &$form_state, $res){
+  $term = $form_state['build_info']['args'][0];
+
+  $form['search'] = array(
+	'#type' => 'fieldset',
+	'#title' => 'Search Words',
+  );
+  $form['search']['box'] = array(
+	'#title' => 'Type any Words in the search box',
+	'#type' => 'textfield',
+	'#default_value' => !empty($res) ? $res: ($term != '*' ? $term : null),
+	'#size' => 15,
+  );
+  $form['submit'] = array(
+	'#type' => 'submit',
+	'#value' => t('Search'),
+	'#attributes' => array('class' => array('hiden')),
+  );
+
+  return $form;
+}
+function mysample_search_form_submit($form,&$form_state){
+  $term =  $form_state['values']['box'];
+
+  if(empty($term)){
+	drupal_goto('mysample/page3/*');
+
+  }else{
+	drupal_goto('mysample/page3/' . rawurlencode($term));
+  }
+}
+//callback function
+function history_page(){
+  $content['raw_markup'] = array(
+    '#type' => 'markup',
+	'#markup' =>'<strong>'.t('Welcome to My Page,where user will get to know more about who the author of this blogs').'<strong>',
+  );
+
+  return $content;
+}
+
+//callback function with parameters
+function calc_page($arg1=6,$arg2=2){
+  $sum='';
+  $sum1='';
+  $sum2='';
+
+  $sum = $arg1 + $arg2.'<br/>';
+  $sum1= $arg1 * $arg2. '<br>';
+  $sum2= $arg1 % $arg2. '<br>';
+
+  $content['raw_markup'] = array(
+	'#type' => 'markup',
+	'#markup' =>'<strong>'.t('Welcome to The Arithmetic Page,where ').$arg1 . t(' and ') . $arg2 .'</strong><br/>'. t('Has Sum as '). $sum . t(' Multiplication as '). $sum1 . t('The Remainder as '). $sum2,
+
+  );
+  return $content;
+
+}
+
+function other_element_types(){
+  drupal_set_title('Other Form Elements');
+ $res = drupal_get_form('mysample_element_types_form');
+  return $res;
+}
+
+function mysample_element_types_form($form, &$form_state){
+  $form['actions'] = array(
+    '#type' => 'actions',
+  );
+
+  $form['actions']['submit'] = array(
+	'#type' => 'submit',
+	'#value' => t('Save'),
+  );
+
+  $form['actions']['delete'] = array(
+    '#type' => 'button',
+    '#value' => t('Delete'),
+  );
+
+  $form['actions']['cancel'] = array(
+    '#markup' => l(t('Cancel'), 'mysample/list'),
+  );
+
+  $form['school_degree'] = array(
+    '#title' => t('List Of Schools Degree'),
+    '#type' => 'checkboxes',
+	'#options' => array(t('Undergraduate'), t('Masters'), t('Doctor')),
+	'#description' => t('List of Degrees in Schools.'),
+  );
+  $opt = array(0 => t('Yes'), 1 => t('No'));
+  $form['answer']  = array(
+    '#title' => t('This is a simple Quiz'),
+	'#type' => 'radios',
+	'#options' => $opt,
+  );
+
+$form['block'] = array(
+
+  '#type' => 'textarea',
+  '#title' => t('Block
+of text area'),
+  '#weight' => 3,
+  '#cols' => 30,
+  '#rows' => 5,
+  '#tree' => TRUE,
+);
+
+  $form['fields'] = array(
+   '#type' => 'textfield',
+	'#title' => t('TextField'),
+	'#size'=> 10,
+  );
+return $form;
+
+}

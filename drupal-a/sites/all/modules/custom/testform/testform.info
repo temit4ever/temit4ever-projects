@@ -1,0 +1,7 @@
+; $Id$
+name = Test Form
+description = Example module to demonstrate the different Form API.
+package = My Test Form Module
+core = 7.x
+files[] = testform.module
+dependencies[] = block

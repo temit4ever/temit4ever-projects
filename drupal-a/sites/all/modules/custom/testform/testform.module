@@ -1,0 +1,146 @@
+<?php
+/**
+ * @file
+ * Demonstrate basic module of forms properties
+ *
+ */
+
+/**
+ * Implementing the Hook_menu
+ */
+
+function testform_menu(){
+  $items['admin/textform/page1'] = array(
+    'title' => 'Forms Property',
+	'description' => t('Different Forms Form'),
+	'page callback' => 'drupal_get_form',
+	'page argument' => array('testform_form_setting'),
+	'file'  => 'testform.inc',
+	'file path'   => drupal_get_path('module', 'testform'),
+  );
+  $items['test/forms'] = array(
+	'title' => 'My Test Forms',
+	'decription' => t('test of many forms'),
+	'page callback' => 'drupal_get_form',
+	'page arguments' => array('testform_form'),
+	'access arguments' => array('access content'),
+	'access callback' => TRUE,
+	);
+  $items['checkall/table'] = array(
+	'title' => t('Check All'),
+	'decription' => t('Test Check All In a table'),
+	'page callback' => 'drupal_get_form',
+	'page arguments' => array('my_form'),
+	'access arguments' => array('access content'),
+	'access callback' => TRUE,
+	);
+
+  return $items;
+}
+
+
+function my_form($form, &$form_state) {
+  $users = array(
+	array('uid' => 1, 'first_name' => 'Indy', 'last_name' => 'Jones'),
+	array('uid' => 2, 'first_name' => 'Darth', 'last_name' => 'Vader'),
+	array('uid' => 3, 'first_name' => 'Super', 'last_name' => 'Man'),
+  );
+
+  $header = array(
+	'first_name' => t('First Name'),
+	'last_name' => t('Last Name'),
+  );
+  $options = array();
+  foreach ($users as $user) {
+	$options[$user['uid']] = array(
+	  'first_name' => $user['first_name'],
+	  'last_name' => $user['last_name'],
+	);
+  }
+  $form['tablecheck'] = array(
+	'#type' => 'tableselect',
+	'#header' => $header,
+	'#options' => $options,
+	'#empty' => t('No users found'),
+  );
+  $form['myfield'] = array(
+    '#title' => 'type your name',
+	'#type' => 'textfield',
+	'#states' => array(
+	  'visible' => array(
+	    ':input[name="tablecheck"]' => array('checked' => true),
+	  ),
+	),
+  );
+  $form['submit'] = array(
+	'#type' => 'submit',
+	'#value' => t('Submit'),
+  );
+  return $form;
+}
+
+
+function testform_form($form, &$form_state){
+
+  $form['anonymous'] = array(
+	'#type' => 'checkbox',
+	'#title' => t('I prefer to remain anonymous'),
+  );
+
+  $form['anonymous1'] = array(
+	'#type' => 'select',
+	'#title' => t('Days of the week'),
+	'#options' => array(
+	  t('Select an Option'),
+	  t('Monday'),
+	  t('Tuesday'),
+	  t('Wednessday'),
+	  t('Thursday'),
+	  t('Friday'),
+	  t('Saturday'),
+	  t('Sunday'),
+	),
+	'#states' => array(
+	  // Only show this field when the 'anonymous' checkbox is enabled or checked.
+	  'visible' => array(
+		':input[name="anonymous"]' => array('checked' => true),
+	  ),
+	),
+
+	$form['anonymous2'] = array(
+	  '#type' => 'checkboxes',
+	  '#title' => t('Type of Course offer'),
+	  '#options' => drupal_map_assoc(array(t('Full-Time'), t('Part-Time'))),
+	  '#states' => array(
+		// Only show this field when the 'anonymous' checkbox is enabled or checked.
+		'checked' => array(
+		  ':input[name="anonymous"]' => array('checked' => true),
+		),
+	  ),
+	)
+  );
+
+// show name field when the anonymous checkbox is checked or not checked(true or false).
+  //$check_state = 1;
+
+$form['name'] = array(
+  '#type' => 'textfield',
+  '#title' => t('Text Form'),
+  '#states' => array(
+	// Only show this field when the 'anonymous' checkbox is enabled or checked.
+	'visible' => array(
+	  ':input[name="anonymous"]' => array('checked' => true),
+	),
+  ),
+);
+
+  $form['submit'] = array(
+	'#type' => 'submit',
+	'#value' => t('Save'),
+	'#attributes' => array('class' => array('hiden')),
+  );
+
+
+  return $form;
+}
+

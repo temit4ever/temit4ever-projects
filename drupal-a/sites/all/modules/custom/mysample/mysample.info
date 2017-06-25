@@ -1,0 +1,8 @@
+; $Id$
+name = My Sample
+description = Various Example of Module building
+package = My Sample Module
+core = 7.x
+configure = admin/config/mysample
+files[] = mysample.module
+dependencies[] = block

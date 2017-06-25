@@ -1,0 +1,24 @@
+<?php
+
+/**
+ * Implements hook_menu().
+ */
+//Callbacks simply register a path so that the correct function is fired
+//when the URL is accessed
+function twominutes_menu() {
+  $items['twominutes-page'] = array(
+	'page callback' => 'twominutes_page',
+	'access arguments' => array('access content'),
+	'type' => MENU_CALLBACK,
+	'access' =>FALSE,
+  );
+
+  return $items;
+}
+
+function twominutes_page() {
+  return "<h2><strong>".t('welcome to this site')."</strong>"."</h2>". "<h3>".t(' where you learn a lot about Drupal')."</h3>";
+
+
+}
+
